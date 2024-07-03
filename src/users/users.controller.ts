@@ -1,22 +1,15 @@
 import { Body, Controller, Post, Get, Put, Param, UseGuards, Delete } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiHeaders, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from './users.model';
 import { RoleGuard } from 'src/auth/role.guard';
 
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-    
-    constructor(private userService: UsersService) { }
 
-    @ApiOperation({ summary: 'Create user' })
-    @ApiResponse({ status: 201, type: User })
-    @Post()
-    create(@Body() userDto: CreateUserDto) {
-        return this.userService.createUser(userDto);
-    }
+    constructor(private userService: UsersService) { }
 
     @ApiOperation({ summary: 'Get user by email' })
     @ApiResponse({ status: 200, type: [User] })
@@ -33,6 +26,8 @@ export class UsersController {
     @ApiOperation({ summary: 'Get all users' })
     @ApiResponse({ status: 200, type: [User] })
     @Get()
+    @ApiBearerAuth()
+    @ApiHeader({ name: 'Authorization', description: 'Bearer token' })
     @UseGuards(new RoleGuard("admin"))
     getAll() {
         return this.userService.getAllUsers();

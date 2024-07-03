@@ -1,34 +1,21 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcryptjs'
 import { User } from 'src/users/users.model';
-import { CartService } from 'src/cart/cart.service';
+import { AuthUserDto } from './dto/auth-user.dto';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { InjectModel } from '@nestjs/sequelize';
+import { Group } from 'src/group/group.model';
 
 @Injectable()
 export class AuthService {
 
-    constructor(private usersService: UsersService, private jwtService: JwtService, private cartService: CartService) { }
+    constructor(private usersService: UsersService, private jwtService: JwtService, @InjectModel(Group) private groupTable: typeof Group) { }
 
-    async login(userDto: CreateUserDto) {
+    async login(userDto: AuthUserDto) {
         const user = await this.validateUser(userDto)
         return this.generateToken(user)
-    }
-
-    async registration(userDto: CreateUserDto) {
-
-        const guest = await this.usersService.getUserByEmail(userDto.email);
-        if (guest) {
-            throw new HttpException(`user with email '${userDto.email}' is already exist`, HttpStatus.BAD_REQUEST)
-        }
-        const hashPassword = await bcrypt.hash(userDto.password, 5);
-        const user = await this.usersService.createUser({ ...userDto, password: hashPassword})
-
-        const token = await this.generateToken(user)
-        this.cartService.createCart("Bearer " + token.token);
-
-        return token
     }
 
     getUserId(token: string) {
@@ -43,7 +30,7 @@ export class AuthService {
         return (new JwtService()).decode(token.split(' ')[1]).role
     }
 
-    private async validateUser(userDto: CreateUserDto) {
+    private async validateUser(userDto: AuthUserDto) {
         try {
             const user = await this.usersService.getUserByEmail(userDto.email)
             const passwordEquals = await bcrypt.compare(userDto.password, user.password)
@@ -59,4 +46,51 @@ export class AuthService {
         const payload = { email: user.email, id: user.id, role: user.role }
         return { token: this.jwtService.sign(payload) }
     }
+
+    async registration(userDto: CreateUserDto) {
+
+        const required = []
+
+        if (!userDto?.email) {
+            required.push('email')
+        }
+
+        if (!userDto?.password) {
+            required.push('password')
+        }
+
+        if (!userDto?.role) {
+            required.push('role')
+        }
+
+        if (userDto?.role === 'student' && !userDto?.groupId) {
+            required.push('groupId')
+        }
+
+        if (required.length > 0) {
+            throw new HttpException(`Missed required fields: ${required.join(', ')}`, HttpStatus.BAD_REQUEST)
+        }
+
+        if (userDto?.role === 'student') {
+            if (!await this.groupTable.findByPk(userDto.groupId)) {
+                throw new HttpException(`Group with id '${userDto.groupId}' is not exist`, HttpStatus.BAD_REQUEST)
+            }
+        }
+
+        if (userDto?.role !== 'student' && userDto?.groupId) {
+            throw new HttpException(`Wrong role for group (${userDto?.role}'s don't have groups)`, HttpStatus.BAD_REQUEST)
+        }
+
+        const guest = await this.usersService.getUserByEmail(userDto.email);
+        if (guest) {
+            throw new HttpException(`user with email '${userDto.email}' is already exist`, HttpStatus.BAD_REQUEST)
+        }
+        const hashPassword = await bcrypt.hash(userDto.password, 5);
+        const user = await this.usersService.createUser({ ...userDto, password: hashPassword })
+
+        const token = await this.generateToken(user)
+
+        return token
+    }
+
 }

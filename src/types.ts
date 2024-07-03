@@ -1,4 +1,6 @@
-export type Role = "admin" | "collector" | "filler" | "creator" | "customer"
+export type Role = "admin" | "student" | "teacher"
+
+export type AttendanceMark = 'Missed' | 'Visited'
 
 export interface CountObject {
     count: number

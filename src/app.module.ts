@@ -4,28 +4,14 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule } from "@nestjs/config";
 import { User } from "./users/users.model";
 import { AuthModule } from './auth/auth.module';
-import { CartModule } from './cart/cart.module';
-import { Cart } from "./cart/cart.model";
-import { ProductModule } from './product/product.module';
-import { Product } from "./product/product.model";
-import { CartItem } from "./cart-item/cart-item.model";
-import { CartItemModule } from "./cart-item/cart-item.module";
-import { OrderModule } from './order/order.module';
-import { OrderItemModule } from './order-item/order-item.module';
-import { Order } from "./order/order.model";
-import { OrderItem } from "./order-item/order-item.model";
-import { RaitingModule } from './raiting/raiting.module';
-import { ProductInfoModule } from './product_info/product_info.module';
-import { AttributeModule } from './attribute/attribute.module';
-import { TypeModule } from './type/type.module';
-import { Raiting } from "./raiting/raiting.model";
-import { ProductInfo } from "./product_info/product_info.model";
-import { Attribute } from "./attribute/attribute.model";
-import { Type } from "./type/type.model";
-import { FileModule } from './file/file.module';
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { resolve } from 'path'
-import { ReportModule } from './report/report.module';
+import { GroupModule } from './group/group.module';
+import { Group } from "./group/group.model";
+import { Lesson } from "./lesson/lesson.model";
+import { LessonModule } from "./lesson/lesson.module";
+import { AttendanceModule } from "./attendance/attendance.module";
+import { Attendance } from "./attendance/attendance.model";
 
 @Module({
     controllers: [],
@@ -41,14 +27,14 @@ import { ReportModule } from './report/report.module';
             username: process.env.POSTGRES_USER,
             password: process.env.POSTGRES_PASSWORD,
             database: process.env.POSTGRES_DB,
-            models: [User, Cart, CartItem, Product, Order, OrderItem, Raiting, ProductInfo, Attribute, Type],
+            models: [User, Group, Lesson, Attendance],
             autoLoadModels: true,
         }),
         ServeStaticModule.forRoot({
             rootPath: resolve(__dirname, 'static')
         })
         ,
-        UsersModule, AuthModule, CartModule, CartItemModule, ProductModule, OrderModule, OrderItemModule, RaitingModule, ProductInfoModule, AttributeModule, TypeModule, FileModule, ReportModule
+        UsersModule, AuthModule, GroupModule, LessonModule, AttendanceModule
     ]
 })
 

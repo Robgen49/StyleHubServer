@@ -9,9 +9,9 @@ async function start() {
     app.enableCors()
 
     const config = new DocumentBuilder()
-        .setTitle('StyleHub store ')
+        .setTitle('Joiny ')
         .setDescription('API documentation')
-        .setVersion('2.1.1')
+        .setVersion('1.0')
         .build()
 
     const document = SwaggerModule.createDocument(app, config);

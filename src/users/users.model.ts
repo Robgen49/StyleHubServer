@@ -1,8 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, DataType, Model, Table, CreatedAt, UpdatedAt, HasOne, HasMany } from "sequelize-typescript";
-import { Cart } from "src/cart/cart.model";
-import { Order } from "src/order/order.model";
-import { Raiting } from "src/raiting/raiting.model";
+import { Column, DataType, Model, Table, CreatedAt, UpdatedAt, HasOne, HasMany, AllowNull, BelongsTo, ForeignKey } from "sequelize-typescript";
+import { Group } from "src/group/group.model";
+import { Lesson } from "src/lesson/lesson.model";
 import { Role } from "src/types";
 
 interface UserCreationAttributes {
@@ -12,16 +11,18 @@ interface UserCreationAttributes {
 }
 
 @Table({ tableName: 'users' })
-export class User extends Model<User, UserCreationAttributes>{
+export class User extends Model<User, UserCreationAttributes> {
 
-    @HasOne(() => Cart)
-    cart: Cart;
+    @BelongsTo(() => Group)
+    group: Group
 
-    @HasMany(() => Order)
-    order: Order
+    @ForeignKey(() => Group)
+    @ApiProperty({ example: '1', description: 'unique identificator' })
+    @Column({ type: DataType.INTEGER, allowNull: true })
+    groupId: number
 
-    @HasMany(() => Raiting)
-    raiting: Raiting
+    @HasMany(() => Lesson)
+    lessons: Lesson
 
     @ApiProperty({ example: '1', description: 'unique identificator' })
     @Column({ type: DataType.INTEGER, unique: true, autoIncrement: true, primaryKey: true })
@@ -48,5 +49,7 @@ export class User extends Model<User, UserCreationAttributes>{
     @UpdatedAt
     @Column({ field: 'updatedAt' })
     updatedAt: Date;
+
+
 
 }
