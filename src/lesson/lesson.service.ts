@@ -172,4 +172,18 @@ export class LessonService {
          return { message: 'code is not correct' }
       }
    }
+
+   async getStudentsInLessonWithMarks(lessoinId: number) {
+      const lesson = await this.lessonTable.findByPk(lessoinId)
+      const marks = await this.attendanceService.getLessonAttendance(lessoinId);
+      const students = await this.getStudentsInLesson(lessoinId);
+      return students.map(student => {
+         return {
+            mark: marks.find(mark => mark.userId === student.id)?.mark ?? null,
+            studentId: student.id,
+            email: student.email,
+            groupId: student.groupId
+         }
+      })
+   }
 }

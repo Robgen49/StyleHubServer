@@ -7,6 +7,7 @@ import { User } from 'src/users/users.model';
 import { SecretCodeDto } from './dto/secretCode.dto';
 import { ScanSecretCodeDto } from './dto/scanSecretCode.dto';
 import { RoleGuard } from 'src/auth/role.guard';
+import { AttendanceListDto } from './dto/attendanceList.dto';
 
 @ApiTags('Lesson')
 @Controller()
@@ -20,7 +21,7 @@ export class LessonController {
    }
 
    @ApiOperation({ summary: 'Get absolutely all lessons' })
-   @ApiResponse({ status: 201, description: 'lessons', type: [Lesson] })
+   @ApiResponse({ status: 200, description: 'lessons', type: [Lesson] })
    @Get('/lessons')
    getAll() {
       return this.lessonService.getAll()
@@ -36,26 +37,26 @@ export class LessonController {
 
    @UseGuards(new RoleGuard("teacher"))
    @ApiOperation({ summary: 'Get secret code for lesson (only teacher (or admin) token - Authorization header reqiured!)' })
-   @ApiResponse({ status: 201, description: 'lesson id and secret code ', type: SecretCodeDto })
+   @ApiResponse({ status: 200, description: 'lesson id and secret code ', type: SecretCodeDto })
    @Get('/lesson/code/:lessonId')
    getSecretCode(@Param('lessonId') lessonId: number) {
       return this.lessonService.getSecretCode(lessonId)
    }
 
    @ApiOperation({ summary: 'Get today lessons' })
-   @ApiResponse({ status: 201, description: 'lessons', type: [Lesson] })
+   @ApiResponse({ status: 200, description: 'lessons', type: [Lesson] })
    @Get('/lessons/today/:email')
    @ApiParam({ name: 'email', example: 'user@mail.ru' })
    getTodayLessons(@Param('email') email: string) {
       return this.lessonService.getLessonsToday(email)
    }
 
-   @ApiOperation({ summary: 'Get students by lesson' })
-   @ApiResponse({ status: 201, description: 'students', type: [User] })
+   @ApiOperation({ summary: 'Get students by lesson (with marks)' })
+   @ApiResponse({ status: 200, description: 'students', type: [AttendanceListDto] })
    @Get('/lessons/students/:lesson')
    @ApiParam({ name: 'lesson', example: 1 })
    getLessionStudents(@Param('lesson') lesson: number) {
-      return this.lessonService.getStudentsInLesson(lesson)
+      return this.lessonService.getStudentsInLessonWithMarks(lesson)
    }
 
    @ApiOperation({ summary: 'Scan the lesson code by student to set attendance mark' })
