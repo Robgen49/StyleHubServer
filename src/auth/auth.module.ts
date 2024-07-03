@@ -14,7 +14,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
     JwtModule.register({
       secret: process.env.Private_Key || 'SECRET',
       signOptions: {
-        expiresIn: '24h'
+        expiresIn: '7d'
       }
     }),
     SequelizeModule.forFeature([Group]),

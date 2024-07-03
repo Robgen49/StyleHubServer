@@ -15,7 +15,8 @@ export class AuthService {
 
     async login(userDto: AuthUserDto) {
         const user = await this.validateUser(userDto)
-        return this.generateToken(user)
+        const token = (await this.generateToken(user)).token;
+        return { token, groupId: user.groupId, role: user.role, email: user.email, id: user.id }
     }
 
     getUserId(token: string) {
@@ -88,9 +89,9 @@ export class AuthService {
         const hashPassword = await bcrypt.hash(userDto.password, 5);
         const user = await this.usersService.createUser({ ...userDto, password: hashPassword })
 
-        const token = await this.generateToken(user)
+        const token = (await this.generateToken(user)).token
 
-        return token
+        return { token, groupId: user.groupId, role: user.role, email: user.email, id: user.id }
     }
 
 }
