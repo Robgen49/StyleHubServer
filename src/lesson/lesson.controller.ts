@@ -8,6 +8,7 @@ import { SecretCodeDto } from './dto/secretCode.dto';
 import { ScanSecretCodeDto } from './dto/scanSecretCode.dto';
 import { RoleGuard } from 'src/auth/role.guard';
 import { AttendanceListDto } from './dto/attendanceList.dto';
+import { GetTodayLessonsDto } from './dto/getTodayLessons.dto';
 
 @ApiTags('Lesson')
 @Controller()
@@ -44,7 +45,7 @@ export class LessonController {
    }
 
    @ApiOperation({ summary: 'Get today lessons' })
-   @ApiResponse({ status: 200, description: 'lessons', type: [Lesson] })
+   @ApiResponse({ status: 200, description: 'lessons', type: [GetTodayLessonsDto] })
    @Get('/lessons/today/:email')
    @ApiParam({ name: 'email', example: 'user@mail.ru' })
    getTodayLessons(@Param('email') email: string) {

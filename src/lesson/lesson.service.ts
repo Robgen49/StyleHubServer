@@ -141,7 +141,22 @@ export class LessonService {
 
 
       if (user.role === 'teacher') {
-         return await this.lessonTable.findAll({ where: { teacherId: user.id, date: formattedDate } })
+         const lessons = await this.lessonTable.findAll({ where: { teacherId: user.id, date: formattedDate } })
+         const group = await this.groupTable.findByPk(user.groupId)
+
+         return lessons.map(lesson => ({
+            lessonId: lesson.id,
+            userId: user.id,
+            userEmail: user.email,
+            lessonDate: lesson.date,
+            lessonTime: lesson.time,
+            groupId: lesson.groupId,
+            teacherId: lesson.teacherId,
+            groupName: group.name,
+            lessonName: lesson.name,
+            place: lesson.place,
+            mark: null
+         }))
       }
 
       if (user.role === 'student') {
@@ -157,7 +172,7 @@ export class LessonService {
                lessonTime: lesson.time,
                groupId: lesson.groupId,
                teacherId: lesson.teacherId,
-               gropName: group.name,
+               groupName: group.name,
                lessonName: lesson.name,
                place: lesson.place,
                mark: userAttendaceToday.find(attendance => attendance.lessonId === lesson.id)?.mark || null
@@ -195,7 +210,6 @@ export class LessonService {
    }
 
    async getStudentsInLessonWithMarks(lessoinId: number) {
-      const lesson = await this.lessonTable.findByPk(lessoinId)
       const marks = await this.attendanceService.getLessonAttendance(lessoinId);
       const students = await this.getStudentsInLesson(lessoinId);
       return students.map(student => {
