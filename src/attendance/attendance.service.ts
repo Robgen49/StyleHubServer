@@ -28,4 +28,8 @@ export class AttendanceService {
       return await this.attendanceTable.findAll({ where: { userId: studentId } });
    }
 
+   async getStudentAttendanceByOneLesson(studentId: number, lessonId: number) {
+      return await this.attendanceTable.findOne({ where: { userId: studentId, lessonId: lessonId } })
+   }
+
 }

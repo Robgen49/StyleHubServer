@@ -8,6 +8,8 @@ import { SecretCodeDto } from "./dto/secretCode.dto";
 import { AttendanceService } from "src/attendance/attendance.service";
 import { ScanSecretCodeDto } from "./dto/scanSecretCode.dto";
 import { AuthService } from "src/auth/auth.service";
+import { Cron } from "@nestjs/schedule";
+import { formatDateToString } from "src/utils/formatDateToString";
 
 @Injectable()
 export class LessonService {
@@ -137,12 +139,31 @@ export class LessonService {
 
       const formattedDate = new Date().toLocaleDateString().split('.').sort((a, b) => b.length - a.length - 1).join('.');
 
+
       if (user.role === 'teacher') {
          return await this.lessonTable.findAll({ where: { teacherId: user.id, date: formattedDate } })
       }
 
       if (user.role === 'student') {
-         return await this.lessonTable.findAll({ where: { groupId: user.groupId, date: formattedDate } })
+         const group = await this.groupTable.findByPk(user.groupId)
+         const lessons = await this.lessonTable.findAll({ where: { groupId: user.groupId, date: formattedDate } })
+         const userAttendaceToday = (await this.attendanceService.getStudentAttendance(user.id)).filter(attendance => lessons.find(lesson => lesson.id === attendance.lessonId))
+         const res = lessons.map(lesson => {
+            return {
+               lessonId: lesson.id,
+               userId: user.id,
+               userEmail: user.email,
+               lessonDate: lesson.date,
+               lessonTime: lesson.time,
+               groupId: lesson.groupId,
+               teacherId: lesson.teacherId,
+               gropName: group.name,
+               lessonName: lesson.name,
+               place: lesson.place,
+               mark: userAttendaceToday.find(attendance => attendance.lessonId === lesson.id)?.mark || null
+            }
+         })
+         return res
       }
 
       if (user.role === 'admin') {
@@ -185,5 +206,33 @@ export class LessonService {
             groupId: student.groupId
          }
       })
+   }
+
+
+   @Cron('10 * * * * *')
+   handleCron() {
+      const date = formatDateToString(new Date());
+      this.lessonTable.findAll()
+         .then((lessons) => {
+            lessons.map(lesson => {
+               this.getStudentsInLessonWithMarks(lesson.id)
+                  .then(students => {
+                     students.map((student) => {
+                        if (student.mark === null) {
+                           if (lesson.date === date) {
+                              if (+lesson.time.slice(0, 2) + 2 <= +(new Date()).toTimeString().slice(0, 2)) {
+                                 this.attendanceService.setAttendanceMark('Missed', student.studentId, lesson.id)
+                              }
+                           }
+                           if (lesson.date < date) {
+                              this.attendanceService.setAttendanceMark('Missed', student.studentId, lesson.id)
+                           }
+                        }
+                     })
+
+                  })
+
+            })
+         })
    }
 }

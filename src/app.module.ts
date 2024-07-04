@@ -12,11 +12,13 @@ import { Lesson } from "./lesson/lesson.model";
 import { LessonModule } from "./lesson/lesson.module";
 import { AttendanceModule } from "./attendance/attendance.module";
 import { Attendance } from "./attendance/attendance.model";
+import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
     controllers: [],
     providers: [],
     imports: [
+        ScheduleModule.forRoot(),
         ConfigModule.forRoot({
             envFilePath: `.${process.env.NODE_ENV}.env`
         }),
