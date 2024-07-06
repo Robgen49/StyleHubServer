@@ -30,4 +30,7 @@ export class GetTodayLessonsDto {
    @ApiProperty({ example: '1', description: 'Mark (always null for teachers)' })
    readonly mark: AttendanceMark
 
+   @ApiProperty({example: 'VAVADA', description: 'Code'})
+   readonly code: string
+
 }

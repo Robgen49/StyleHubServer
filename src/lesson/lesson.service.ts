@@ -142,9 +142,14 @@ export class LessonService {
 
       if (user.role === 'teacher') {
          const lessons = await this.lessonTable.findAll({ where: { teacherId: user.id, date: formattedDate } })
-         const group = await this.groupTable.findByPk(user.groupId)
+         const groups = []
 
-         return lessons.map(lesson => ({
+         for (let i = 0; i < lessons.length; i++) {
+            const group = await this.groupTable.findByPk(lessons[i].groupId)
+            groups.push({ id: group.id, name: group.name })
+         }
+
+         return lessons.map((lesson, index) => ({
             lessonId: lesson.id,
             userId: user.id,
             userEmail: user.email,
@@ -152,10 +157,11 @@ export class LessonService {
             lessonTime: lesson.time,
             groupId: lesson.groupId,
             teacherId: lesson.teacherId,
-            groupName: group.name,
+            groupName: groups[index].name,
             lessonName: lesson.name,
             place: lesson.place,
-            mark: null
+            mark: null,
+            code: lesson.code
          }))
       }
 
@@ -175,7 +181,8 @@ export class LessonService {
                groupName: group.name,
                lessonName: lesson.name,
                place: lesson.place,
-               mark: userAttendaceToday.find(attendance => attendance.lessonId === lesson.id)?.mark || null
+               mark: userAttendaceToday.find(attendance => attendance.lessonId === lesson.id)?.mark || null,
+               code: lesson.code
             }
          })
          return res
@@ -223,7 +230,7 @@ export class LessonService {
    }
 
 
-   @Cron('10 * * * * *')
+   @Cron('* 0 * * * *')
    handleCron() {
       const date = formatDateToString(new Date());
       this.lessonTable.findAll()
